@@ -179,3 +179,16 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&
     }
     v
 }
+
+/// Translate byte ptr
+pub fn translate_byte(token: usize, ptr: *const u8) -> Option<&'static mut u8> {
+    let page_table = PageTable::from_token(token);
+
+    let start = ptr as usize;
+    let start_va = VirtAddr::from(start);
+    let vpn = start_va.floor();
+
+    page_table
+        .translate(vpn)
+        .map(|ppe| &mut ppe.ppn().get_bytes_array()[start_va.page_offset()])
+}
